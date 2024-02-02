@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Шахматная Доска</title>
+
+    <!-- Подключение библиотеки chessboardjs -->
+    <link rel="stylesheet" href="chessboardjs/css/chessboard-1.0.0.min.css">
+
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #board1 {
+            width: 400px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Элемент для шахматной доски -->
+    <div id="board1" style="width: 400px"></div>
+
+    <!-- Инициализация доски в JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="chessboardjs/js/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.min.js"></script>
+    <script>
+        var board, game = new Chess();
+
+        // Обновление доски в соответствии с движком
+        var updateBoard = function () {
+            board.position(game.fen());
+        };
+
+        var onDrop = function (source, target) {
+            var move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q' // NOTE: Always promoting to a queen for example simplicity
+            });
+
+            // Если ход невозможен, возвращаем фигуру назад
+            if (move === null) return 'snapback';
+            updateBoard();
+        };
+
+        var cfg = {
+            draggable: true,
+            position: 'start',
+            onDrop: onDrop,
+            pieceTheme: 'chessboardjs/img/chesspieces/wikipedia/{piece}.png'
+        };
+
+        board = Chessboard('board1', cfg);
+    </script>
+</body>
+</html>

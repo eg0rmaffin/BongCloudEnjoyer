@@ -37,7 +37,7 @@ public class Engine {
         }
 
         // Дополнительные информации о ходе, цвете, рокировке и возможности взятия на проходе
-        fen.append(" w KQkq - ");
+        fen.append(" w KQkq - "); // добавим потом логику генерации, основанную на полях класса
         if (this.isWhiteTurn){
             fen.append("0 1");
         } else {
@@ -70,23 +70,15 @@ public class Engine {
     }
 
     public void makeMove(String uciMove) {
-        if (uciMove.equals("e1g1") && board[7][4] == 'K') { // Малая рокировка белых
-            board[7][6] = 'K'; // Король на свою новую позицию
-            board[7][5] = 'R'; // Ладья на свою новую позицию
-            board[7][4] = board[7][7] = ' '; // Очистка старых позиций
-        } else if (uciMove.equals("e1c1") && board[7][4] == 'K') { // Большая рокировка белых
-            board[7][2] = 'K';
-            board[7][3] = 'R';
-            board[7][4] = board[7][0] = ' ';
-        } else if (uciMove.equals("e8g8") && board[0][4] == 'k') { // Малая рокировка черных
-            board[0][6] = 'k';
-            board[0][5] = 'r';
-            board[0][4] = board[0][7] = ' ';
-        } else if (uciMove.equals("e8c8") && board[0][4] == 'k') { // Большая рокировка черных
-            board[0][2] = 'k';
-            board[0][3] = 'r';
-            board[0][4] = board[0][0] = ' ';
-        } else {
+        if (uciMove.equals("e1g1") && board[7][4] == 'K') {
+            makeCastleMove(7, 4, 7, 6); // Малая рокировка белых
+        } else if (uciMove.equals("e1c1") && board[7][4] == 'K') {
+            makeCastleMove(7, 4, 7, 2); // Большая рокировка белых
+        } else if (uciMove.equals("e8g8") && board[0][4] == 'k') {
+            makeCastleMove(0, 4, 0, 6); // Малая рокировка черных
+        } else if (uciMove.equals("e8c8") && board[0][4] == 'k') {
+            makeCastleMove(0, 4, 0, 2); // Большая рокировка черных
+        } else if (uciMove.length() == 4) { // Обычный ход
             int startX = '8' - uciMove.charAt(1);
             int startY = uciMove.charAt(0) - 'a';
             int endX = '8' - uciMove.charAt(3);
@@ -95,9 +87,35 @@ public class Engine {
             char piece = board[startX][startY];
             board[endX][endY] = piece;
             board[startX][startY] = ' ';
+        } else if (uciMove.length() == 5 && uciMove.charAt(4) == 'e') { // Взятие на проходе
+            int startX = '8' - uciMove.charAt(1);
+            int startY = uciMove.charAt(0) - 'a';
+            int endX = '8' - uciMove.charAt(3);
+            int endY = uciMove.charAt(2) - 'a';
+
+            board[endX][endY] = board[startX][startY];
+            board[startX][startY] = ' ';
+            board[startX][endY] = ' '; // Убираем взятую пешку на проходе
+        } else if (uciMove.length() == 5 && (uciMove.charAt(4) == 'q' || uciMove.charAt(4) == 'r'
+                || uciMove.charAt(4) == 'b' || uciMove.charAt(4) == 'n')) { // Превращение пешки
+            int startX = '8' - uciMove.charAt(1);
+            int startY = uciMove.charAt(0) - 'a';
+            int endX = '8' - uciMove.charAt(3);
+            int endY = uciMove.charAt(2) - 'a';
+
+            char promotionPiece = uciMove.charAt(4);
+            board[endX][endY] = promotionPiece;
+            board[startX][startY] = ' ';
         }
 
         // Переключаем очередь хода
         this.isWhiteTurn = !this.isWhiteTurn;
     }
+
+    private void makeCastleMove(int startRow, int startCol, int endRow, int endCol) {
+        char piece = board[startRow][startCol];
+        board[endRow][endCol] = piece;
+        board[startRow][startCol] = ' ';
+    }
+
 }
