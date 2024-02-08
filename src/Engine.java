@@ -4,8 +4,12 @@ public class Engine {
     private boolean isWhiteTurn;
 
     public Engine() {
-        initializeBoard();
+        initializeBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         this.isWhiteTurn = true;
+    }
+
+    public Engine(String fen){
+        initializeBoard(fen);
     }
 
     public String generateFEN() {
@@ -37,37 +41,68 @@ public class Engine {
         }
 
         // Дополнительные информации о ходе, цвете, рокировке и возможности взятия на проходе
-        fen.append(" w KQkq - "); // добавим потом логику генерации, основанную на полях класса
-        if (this.isWhiteTurn){
-            fen.append("0 1");
-        } else {
-            fen.append("1 0");
-        }
+        if (isWhiteTurn){
+            fen.append(" w ");
+        }else fen.append(" b ");
+        fen.append("KQkq - "); // добавим потом логику генерации, основанную на полях класса
+        fen.append("0 1"); //ааа так это возможность взятия на проходе похоже. тут и 0 3 может быть надо разобраться
 
         return fen.toString();
     }
 
     // Дополнительные методы и логика могут быть добавлены в этот класс по мере необходимости
 
-    private void initializeBoard() {
-        // Начальное расположение фигур на доске
-        char[][] initialBoard = {
-                {'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'},
-                {'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
-                {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-                {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-                {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-                {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-                {'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
-                {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'}
-        };
+//    private void initializeBoard() {
+//        // Начальное расположение фигур на доске
+//        char[][] initialBoard = {
+//                {'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'},
+//                {'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
+//                {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+//                {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+//                {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+//                {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+//                {'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
+//                {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'}
+//        };
+//
+//        // Копируем начальное расположение внутренний массив доски
+//        board = new char[8][8];
+//        for (int i = 0; i < 8; i++) {
+//            System.arraycopy(initialBoard[i], 0, board[i], 0, 8);
+//        }
+//    }
 
-        // Копируем начальное расположение внутренний массив доски
+
+    private void initializeBoard(String fen) {
+
         board = new char[8][8];
+        // Разбиваем FEN строку на части
+        String[] parts = fen.split(" ");
+
+        // Расстановка фигур на доске
+        String[] rows = parts[0].split("/");
         for (int i = 0; i < 8; i++) {
-            System.arraycopy(initialBoard[i], 0, board[i], 0, 8);
+            String row = rows[i];
+            int j = 0;
+            for (char c : row.toCharArray()) {
+                if (Character.isDigit(c)) {
+                    // Пустые клетки
+                    int count = Character.getNumericValue(c);
+                    for (int k = 0; k < count; k++) {
+                        board[i][j++] = ' ';
+                    }
+                } else {
+                    // Фигуры
+                    board[i][j++] = c;
+                }
+            }
         }
+
+        // Установка текущего хода
+        this.isWhiteTurn = parts[1].equals("w");
     }
+
+
 
     public void makeMove(String uciMove) {
         if (uciMove.equals("e1g1") && board[7][4] == 'K') {
